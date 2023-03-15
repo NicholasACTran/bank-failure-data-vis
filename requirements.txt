@@ -1,0 +1,6 @@
+pandas
+request
+beautifulsoup4
+lxml
+matplotlib
+circlify
