@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup # library to parse HTML documents
 from pprint import pprint as pp
 import circlify as circ # library to handle circle packing
 import matplotlib.pyplot as plt # library to handle visualization
+from matplotlib.lines import Line2D
 
 # get the response in the form of html
 wikiurl="https://en.wikipedia.org/wiki/List_of_largest_U.S._bank_failures"
@@ -52,7 +53,13 @@ data['r'] = r_s
 # plotting the data
 fig, ax = plt.subplots(figsize = (20, 20))
 ax.axis('off')
-plt.title('American Bank Failures Throughout History', fontsize = 30)
+plt.title('American Bank Failures Throughout History\n(Adjusted for Inflation)', fontsize = 25)
+legend_elements = [
+    Line2D([0], [0], marker='o', color='w', label='2023', markerfacecolor='#FFB000', markersize=15),
+    Line2D([0], [0], marker='o', color='w', label='08-09', markerfacecolor='#DC267F', markersize=15),
+    Line2D([0], [0], marker='o', color='w', label='Other', markerfacecolor='#648FFF', markersize=15)
+]
+ax.legend(handles=legend_elements)
 
 lim = max(
     max(
@@ -76,12 +83,20 @@ def name_split(x):
         parity = not parity
     return name.rstrip()
 
-labels = [f'{name_split(row[0])}\n{row[1]}\n${row[2]} billion' for row in zip(data['Bank'], data['Year'], data['Adjusted Assets'])]
-years = list(data['Year'])
+def year_to_color(x):
+    if x == 2023:
+        return '#FFB000'
+    elif x == 2008 or x == 2009:
+        return '#DC267F'
+    else:
+        return '#648FFF'
 
-for circle, label, year in zip(circles, labels, years):
+labels = [f'{name_split(row[0])}\n{row[1]}\n${row[2]} billion' for row in zip(data['Bank'], data['Year'], data['Adjusted Assets'])]
+colors = list(map(year_to_color, list(data['Year'])))
+
+for circle, label, color in zip(circles, labels, colors):
     x, y, r = circle
-    ax.add_patch(plt.Circle((x, y), r, alpha=0.2, linewidth=2, facecolor='blue' if year != 2023 else 'red'))
+    ax.add_patch(plt.Circle((x, y), r, alpha=0.2, linewidth=2, facecolor=color))
     ax.annotate(
         label,
         (x, y),
